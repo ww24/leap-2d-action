@@ -35,6 +35,8 @@ enchant();
     init: function () {
       this.image = core.assets["icons"];
       this.frame = 24;
+      // 透過率 0%
+      this.opacity = 1;
     },
     explode: function () {
       // 爆破音の再生 (上が enchant.js 標準、下が独自実装)
@@ -53,10 +55,7 @@ enchant();
       } 
       tl.fadeOut(5)
         .delay(10)
-        .then(function () {
-          this.init();
-          this.opacity = 1;
-        });
+        .then(this.init);
     },
     gainFrame: function () {
       this.frame++;
