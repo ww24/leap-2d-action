@@ -1,3 +1,4 @@
+/* globals Leap, leap2dAction */
 /**
  * 2D Action Game: Leap Motion Controller
  * with enchant.js

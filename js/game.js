@@ -15,11 +15,12 @@ enchant();
     explode: new AudioController("sound/explosion06.wav", "sound/explosion06.mp3")
   };
 
-  var game = new enchant.Core(640, 640);
+  var game = leap2dAction.core = new enchant.Core(640, 640);
   game.preload({
-    "icons": "img/icon0.png",
-    "explode": "img/effect0.png",
-    "explode.se": "sound/explosion06.wav",
+    map: "img/map2.png",
+    icons: "img/icon0.png",
+    explode: "img/effect0.png",
+    explode_se: "sound/explosion06.wav"
   });
   game.fps = 30;
 
@@ -27,58 +28,29 @@ enchant();
   game.start();
 })(function () { // call before load event
   var core = this;
-
-  var Bomb = enchant.Class.create(enchant.Sprite, {
-    initialize: function () {
-      enchant.Sprite.call(this, 16, 16);
-      this.init();
-    },
-    init: function () {
-      this.image = core.assets.icons;
-      this.frame = 24;
-      // 透過率 0%
-      this.opacity = 1;
-    },
-    explode: function () {
-      if (this.frame !== 24) return;
-
-      // 爆破音の再生 (上が enchant.js 標準、下が独自実装)
-      //core.assets["explode.se"].clone().play();
-      leap2dAction.se.explode.play();
-
-      var that = this;
-
-      // 透過 100%
-      this.opacity = 0;
-      // 爆破エフェクトに切り替え
-      this.frame = 0;
-      this.image = core.assets.explode;
-      // 爆破エフェクト
-      var tl = this.tl.fadeIn(5);
-      for (var i = 0; i < 4; i++) {
-        tl = tl.then(this.gainFrame).delay(5);
-      }
-      tl.fadeOut(5)
-        .delay(10)
-        .then(this.init)
-        .then(function () {
-          that.explode_lock = false;
-        });
-    },
-    gainFrame: function () {
-      this.frame++;
-    }
-  });
-
-  var bomb = leap2dAction.bomb = new Bomb();
-
+  // create scene
   var gameScene = new enchant.Scene();
+
+  // create block wall
+  var block = [];
+  for (var i = 0; i < 40; i++) {
+    block[i] = [];
+    for (var j = 0; j < 40; j++) {
+      block[i][j] = new enchant.Sprite.Block(i * 16, j * 16);
+      gameScene.addChild(block[i][j]);
+    }
+  }
+
+  // create bomb
+  var bomb = leap2dAction.bomb = new enchant.Sprite.Bomb();
   gameScene.addChild(bomb);
+
+  // publish scene
   core.pushScene(gameScene);
 
   // for touch control
   gameScene.on(enchant.Event.TOUCH_MOVE, function (e) {
-    if (bomb.frame === 24) {
+    if (bomb.frame === 24 && e.localX >= 0 && e.localX <= core.width && e.localY >= 0 && e.localY <= core.height) {
       bomb.y = e.localY;
       bomb.x = e.localX;
     }
@@ -87,7 +59,25 @@ enchant();
   core.keybind(32, "space");
   gameScene.on(enchant.Event.ENTER_FRAME, function () {
     if (core.input.space) {
-      bomb.explode();
+      bomb.explode(function () {
+        var x1 = Math.floor(this.x / 16);
+        var x2 = Math.floor((this.x + 16) / 16);
+        var y1 = Math.floor(this.y / 16);
+        var y2 = Math.floor((this.y + 16) / 16);
+
+        function addChild() {
+          gameScene.addChild(this);
+        }
+
+        // left top
+        block[x1][y1].destroy(0, addChild);
+        // left bottom
+        block[x1][y2].destroy(1, addChild);
+        // right top
+        block[x2][y1].destroy(2, addChild);
+        // right bottom
+        block[x2][y2].destroy(3, addChild);
+      });
     }
   });
 });
