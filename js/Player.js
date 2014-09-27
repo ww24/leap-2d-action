@@ -25,9 +25,11 @@ var Player = enchant.Sprite.Player = enchant.Class.create(enchant.Sprite, {
       }
       if (leap2dAction.core.input.left) {
         dx = -8;
+        this.scaleX = -1;
       }
       if (leap2dAction.core.input.right) {
         dx = 8;
+        this.scaleX = 1;
       }
 
       // y 軸障害物判定
@@ -39,7 +41,6 @@ var Player = enchant.Sprite.Player = enchant.Class.create(enchant.Sprite, {
       if (! leap2dAction.collisionMap.hitTest(this.y + 32, this.x)) {
         this.dy = 0.2 * Math.pow(frame, 2) + this.dy;
         var limit = this.dy / 16;
-        //console.log(limit);
         for (var i = 1; i < limit; i++) {
           if (leap2dAction.collisionMap.hitTest(this.y + 32 + 16 * i, this.x)) {
             break;
@@ -49,9 +50,9 @@ var Player = enchant.Sprite.Player = enchant.Class.create(enchant.Sprite, {
           this.dy = 16 * (i - 1);
           frame = 0;
         }
-      } else if (this.dy !== 0) {
-        console.log(this.dy, (this.y + this.dy) % 16, this.y);
-        this.y = this.dy - (this.y + this.dy) % 16;
+      } else if (this.dy > 0) {
+        this.y += this.dy - (this.y + this.dy) % 16 - 16;
+        this.dy = 0;
         frame = 0;
       }
 
@@ -67,13 +68,12 @@ var Player = enchant.Sprite.Player = enchant.Class.create(enchant.Sprite, {
       frame++;
 
       if (dx) {
-        this.frame = [6, 7][frame % 2];
+        this.frame = [6, 6, 7, 7][frame % 4];
       } else {
         this.frame = 5;
       }
 
       if (this.y > 640) {
-        hoge();
         leap2dAction.gameover();
       }
     });
