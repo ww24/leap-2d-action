@@ -8,13 +8,14 @@ var Block = enchant.Sprite.Block = enchant.Class.create(enchant.Sprite, {
     this.x = x;
     this.y = y;
   },
-  enemy: false,
   destroy: function (index, callback) {
     if (this.parentNode != null) {
       this.remove();
+      leap2dAction.collision[this.x / 16][this.y / 16] = 0;
 
       var frame = 0;
       var block = new this.constructor(this.x, this.y);
+      leap2dAction.enemies.push(block);
       var k = 0.1;
       if (index % 2 === 0) {
         k = 0.2;
@@ -28,7 +29,7 @@ var Block = enchant.Sprite.Block = enchant.Class.create(enchant.Sprite, {
         } else {
           this.x += frame;
         }
-        if (this.y > 600) {
+        if (this.y >= 640) {
           this.remove();
         }
       });
@@ -37,6 +38,13 @@ var Block = enchant.Sprite.Block = enchant.Class.create(enchant.Sprite, {
     }
   },
   remove: function () {
+    // remove enemies element
+    var index = leap2dAction.enemies.indexOf(this);
+    if (~ index) {
+      leap2dAction.enemies.splice(index, 1);
+    }
+
+    // remove instance from parent node
     if (this.parentNode != null) {
       this.parentNode.removeChild(this);
     }

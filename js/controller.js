@@ -25,19 +25,11 @@ controller.on("frame", function (frame) {
       return finger.extended;
     }).length;
 
-    // if (extendedFingerSize <= 1) {
-    //   console.log(hand.type, "グー");
-    // } else if (extendedFingerSize >= 4) {
-    //   console.log(hand.type, "パー");
-    // } else { // 2 <= extendedFingerSize <= 3
-    //   console.log(hand.type, "チョキ");
-    // }
-
     if (leap2dAction.bomb.frame === 24) {
       // 手を握った状態
       if (extendedFingerSize === 0) {
         // 爆発
-        leap2dAction.bomb.explode();
+        leap2dAction.bomb.explode(leap2dAction.afterExplode);
       }
 
       // 手の位置取得
@@ -48,8 +40,10 @@ controller.on("frame", function (frame) {
       };
 
       // 位置反映
-      leap2dAction.bomb.x = screenPos.x;
-      leap2dAction.bomb.y = screenPos.y;
+      if (screenPos.x >= 0 && screenPos.x < leap2dAction.core.width - 16 && screenPos.y >= 0 && screenPos.y < leap2dAction.core.height - 16) {
+        leap2dAction.bomb.x = screenPos.x;
+        leap2dAction.bomb.y = screenPos.y;
+      }
     }
   });
 });
